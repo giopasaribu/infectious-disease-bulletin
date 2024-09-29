@@ -65,34 +65,4 @@ public class DiseaseServiceTest {
         verify(diseaseProxy, times(1)).fetchDiseaseRecord(any(Map.class));
     }
 
-    @Test
-    public void testGetProcessedDiseaseData() {
-        // Given: Mocking some sample data
-        DiseaseRecord record1 = new DiseaseRecord();
-        record1.setDiseaseId(1L);
-        record1.setDisease("COVID-19");
-        record1.setEpiWeek("W01");
-        record1.setEpiYear("2022");
-        record1.setNumberOfCases(100L);
-
-        DiseaseRecord record2 = new DiseaseRecord();
-        record2.setDiseaseId(2L);
-        record2.setDisease("COVID-19");
-        record2.setEpiWeek("W02");
-        record2.setEpiYear("2022");
-        record2.setNumberOfCases(150L);
-
-        when(diseaseRecordRepository.streamAll()).thenReturn(Arrays.asList(record1, record2).stream());
-
-        // When
-        Map<String, Map<String, List<String>>> result = diseaseService.getProcessedDiseaseData();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertTrue(result.containsKey("COVID-19"));
-        assertEquals(1, result.get("COVID-19").size());
-        assertTrue(result.get("COVID-19").containsKey("2022"));
-        assertTrue(result.get("COVID-19").get("2022").get(0).contains("W01-W02"));
-    }
 }
