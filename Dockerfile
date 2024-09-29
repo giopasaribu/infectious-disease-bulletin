@@ -1,5 +1,5 @@
 # Stage 1: Build Stage
-FROM maven:3.8.6-openjdk-17 AS builder
+FROM maven:3.8.7-eclipse-temurin-17 AS builder
 WORKDIR /app
 
 # Copy the Maven project files
