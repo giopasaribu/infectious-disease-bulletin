@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)  // Use Mockito extension only
 public class DiseaseServiceTest {
 
     @Mock
@@ -27,10 +27,11 @@ public class DiseaseServiceTest {
     private DiseaseRecordRepository diseaseRecordRepository;
 
     @InjectMocks
-    private DiseaseService diseaseService;
+    private DiseaseService diseaseService; // Inject mocks into DiseaseService
 
     @BeforeEach
     public void setup() {
+        // Initialize DiseaseService with mocks (done automatically by @InjectMocks)
         diseaseService = new DiseaseService(diseaseProxy, diseaseRecordRepository);
     }
 
@@ -119,8 +120,8 @@ public class DiseaseServiceTest {
         emptyResponse.setResult(emptyResult);
 
         when(diseaseProxy.fetchDiseaseRecord(any(Map.class)))
-                .thenReturn(Optional.of(firstResponse))
-                .thenReturn(Optional.of(emptyResponse));
+                .thenReturn(Optional.of(firstResponse))  // First call returns data
+                .thenReturn(Optional.of(emptyResponse)); // Second call returns empty
 
         // When
         diseaseService.fetchAllLatestDiseaseData();
@@ -128,5 +129,13 @@ public class DiseaseServiceTest {
         // Then
         verify(diseaseRecordRepository, times(1)).findMaxDiseaseId();
         verify(diseaseRecordRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    public void testInvalidateDiseaseData() {
+        // Since invalidateDiseaseData only evicts cache, and we don't have a running cache manager in unit test
+        // We can't directly test the cache functionality here.
+        // Therefore, we're simply calling the method to ensure there are no exceptions.
+        assertDoesNotThrow(() -> diseaseService.invalidateDiseaseData());
     }
 }
