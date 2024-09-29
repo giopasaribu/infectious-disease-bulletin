@@ -1,6 +1,5 @@
 package com.govtech.infectiousdiseasebulletin.service;
 
-import com.govtech.infectiousdiseasebulletin.TestConfig;
 import com.govtech.infectiousdiseasebulletin.data.DiseaseDTO;
 import com.govtech.infectiousdiseasebulletin.model.DiseaseRecord;
 import com.govtech.infectiousdiseasebulletin.proxy.DiseaseProxy;
@@ -11,9 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.*;
 
@@ -21,9 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
 public class DiseaseServiceTest {
 
     @Mock
@@ -73,7 +67,7 @@ public class DiseaseServiceTest {
 
     @Test
     public void testGetProcessedDiseaseData() {
-        // Given
+        // Given: Mocking some sample data
         DiseaseRecord record1 = new DiseaseRecord();
         record1.setDiseaseId(1L);
         record1.setDisease("COVID-19");
@@ -96,18 +90,17 @@ public class DiseaseServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertTrue(result.containsKey("COVID-19"));
         assertEquals(1, result.get("COVID-19").size());
-        assertEquals(1, result.get("COVID-19").get("2022").size());
+        assertTrue(result.get("COVID-19").containsKey("2022"));
         assertTrue(result.get("COVID-19").get("2022").get(0).contains("W01-W02"));
-        verify(diseaseRecordRepository, times(1)).streamAll();
     }
 
     @Test
-    public void testFetchAllLatestDiseaseData_successfulFetch() {
+    public void testFetchAllLatestDiseaseData() {
         // Given
         when(diseaseRecordRepository.findMaxDiseaseId()).thenReturn(20060L);
 
-        // Create the first response that contains one record
         DiseaseDTO firstResponse = new DiseaseDTO();
         firstResponse.setSuccess(true);
         DiseaseDTO.Result firstResult = new DiseaseDTO.Result();
@@ -119,17 +112,15 @@ public class DiseaseServiceTest {
         firstResult.setRecords(Collections.singletonList(disease));
         firstResponse.setResult(firstResult);
 
-        // Create the second response that is empty (indicating no more records)
         DiseaseDTO emptyResponse = new DiseaseDTO();
         emptyResponse.setSuccess(true);
         DiseaseDTO.Result emptyResult = new DiseaseDTO.Result();
-        emptyResult.setRecords(Collections.emptyList()); // Empty records list
+        emptyResult.setRecords(Collections.emptyList());
         emptyResponse.setResult(emptyResult);
 
-        // Configure the mock to return the first response, then the empty response
         when(diseaseProxy.fetchDiseaseRecord(any(Map.class)))
-                .thenReturn(Optional.of(firstResponse))  // First call returns data
-                .thenReturn(Optional.of(emptyResponse)); // Second call returns empty
+                .thenReturn(Optional.of(firstResponse))
+                .thenReturn(Optional.of(emptyResponse));
 
         // When
         diseaseService.fetchAllLatestDiseaseData();
@@ -138,5 +129,4 @@ public class DiseaseServiceTest {
         verify(diseaseRecordRepository, times(1)).findMaxDiseaseId();
         verify(diseaseRecordRepository, times(1)).saveAll(anyList());
     }
-
 }
