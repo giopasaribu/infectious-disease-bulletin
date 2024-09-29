@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)  // Use Mockito extension only
 public class DiseaseServiceTest {
 
     @Mock
@@ -27,10 +27,11 @@ public class DiseaseServiceTest {
     private DiseaseRecordRepository diseaseRecordRepository;
 
     @InjectMocks
-    private DiseaseService diseaseService;
+    private DiseaseService diseaseService; // Inject mocks into DiseaseService
 
     @BeforeEach
     public void setup() {
+        // Initialize DiseaseService with mocks (done automatically by @InjectMocks)
         diseaseService = new DiseaseService(diseaseProxy, diseaseRecordRepository);
     }
 
@@ -94,5 +95,39 @@ public class DiseaseServiceTest {
         assertEquals(1, result.get("COVID-19").size());
         assertTrue(result.get("COVID-19").containsKey("2022"));
         assertTrue(result.get("COVID-19").get("2022").get(0).contains("W01-W02"));
+    }
+
+    @Test
+    public void testFetchAllLatestDiseaseData() {
+        // Given
+        when(diseaseRecordRepository.findMaxDiseaseId()).thenReturn(20060L);
+
+        DiseaseDTO firstResponse = new DiseaseDTO();
+        firstResponse.setSuccess(true);
+        DiseaseDTO.Result firstResult = new DiseaseDTO.Result();
+        DiseaseDTO.Disease disease = new DiseaseDTO.Disease();
+        disease.setId(20061L);
+        disease.setDisease("COVID-19");
+        disease.setEpiWeek("2022-W01");
+        disease.setNumberOfCases("100");
+        firstResult.setRecords(Collections.singletonList(disease));
+        firstResponse.setResult(firstResult);
+
+        DiseaseDTO emptyResponse = new DiseaseDTO();
+        emptyResponse.setSuccess(true);
+        DiseaseDTO.Result emptyResult = new DiseaseDTO.Result();
+        emptyResult.setRecords(Collections.emptyList());
+        emptyResponse.setResult(emptyResult);
+
+        when(diseaseProxy.fetchDiseaseRecord(any(Map.class)))
+                .thenReturn(Optional.of(firstResponse))  // First call returns data
+                .thenReturn(Optional.of(emptyResponse)); // Second call returns empty
+
+        // When
+        diseaseService.fetchAllLatestDiseaseData();
+
+        // Then
+        verify(diseaseRecordRepository, times(1)).findMaxDiseaseId();
+        verify(diseaseRecordRepository, times(1)).saveAll(anyList());
     }
 }
