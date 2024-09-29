@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)  // Use Mockito extension only
+@ExtendWith(MockitoExtension.class)
 public class DiseaseServiceTest {
 
     @Mock
@@ -31,7 +31,6 @@ public class DiseaseServiceTest {
 
     @BeforeEach
     public void setup() {
-        // Initialize DiseaseService with mocks (done automatically by @InjectMocks)
         diseaseService = new DiseaseService(diseaseProxy, diseaseRecordRepository);
     }
 
@@ -68,7 +67,7 @@ public class DiseaseServiceTest {
 
     @Test
     public void testGetProcessedDiseaseData() {
-        // Given: Mocking some sample data
+        // Given
         DiseaseRecord record1 = new DiseaseRecord();
         record1.setDiseaseId(1L);
         record1.setDisease("COVID-19");
