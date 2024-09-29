@@ -1,5 +1,6 @@
 package com.govtech.infectiousdiseasebulletin.service;
 
+import com.govtech.infectiousdiseasebulletin.TestConfig;
 import com.govtech.infectiousdiseasebulletin.data.DiseaseDTO;
 import com.govtech.infectiousdiseasebulletin.model.DiseaseRecord;
 import com.govtech.infectiousdiseasebulletin.proxy.DiseaseProxy;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.*;
 
@@ -17,7 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
 @ExtendWith(MockitoExtension.class)
+@ContextConfiguration(classes = {TestConfig.class})
 public class DiseaseServiceTest {
 
     @Mock
