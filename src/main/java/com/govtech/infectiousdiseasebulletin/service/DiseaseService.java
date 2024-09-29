@@ -58,13 +58,11 @@ public class DiseaseService {
     @CacheEvict(value = {"diseaseData"}, allEntries = true)
     public void fetchAllLatestDiseaseData() {
         Long maxDiseaseId = diseaseRecordRepository.findMaxDiseaseId();
-        Long initialOffset, remaining;
+        Long initialOffset;
         if (maxDiseaseId == null) {
             initialOffset = 0L;
-            remaining = 0L;
         } else {
-            initialOffset = (maxDiseaseId / LIMIT) * LIMIT;
-            remaining = maxDiseaseId % LIMIT;
+            initialOffset = maxDiseaseId;
         }
 
         while (true) {
@@ -89,8 +87,7 @@ public class DiseaseService {
                 }
 
                 // Save the fetched data
-                Long dataOffset = initialOffset + remaining;
-                saveDiseaseData(response.getResult().getRecords(), dataOffset);
+                saveDiseaseData(response.getResult().getRecords(), initialOffset);
 
                 // Increment the offset by 10,000 for the next loop iteration
                 initialOffset += LIMIT;
@@ -110,18 +107,16 @@ public class DiseaseService {
         List<DiseaseRecord> diseaseRecordList = new ArrayList<DiseaseRecord>();
         if (!diseaseList.isEmpty()) {
             diseaseList.forEach(disease -> {
-                if (disease.getId() > dataOffset) {
-                    DiseaseRecord diseaseRecord = new DiseaseRecord();
-                    diseaseRecord.setDiseaseId(disease.getId());
-                    diseaseRecord.setDisease(disease.getDisease());
-                    if (!StringUtils.isEmpty(disease.getEpiWeek())) {
-                        String[] epiData = disease.getEpiWeek().split("-");
-                        diseaseRecord.setEpiWeek(epiData[1]);
-                        diseaseRecord.setEpiYear(epiData[0]);
-                    }
-                    diseaseRecord.setNumberOfCases(Long.valueOf(disease.getNumberOfCases()));
-                    diseaseRecordList.add(diseaseRecord);
+                DiseaseRecord diseaseRecord = new DiseaseRecord();
+                diseaseRecord.setDiseaseId(disease.getId());
+                diseaseRecord.setDisease(disease.getDisease());
+                if (!StringUtils.isEmpty(disease.getEpiWeek())) {
+                    String[] epiData = disease.getEpiWeek().split("-");
+                    diseaseRecord.setEpiWeek(epiData[1]);
+                    diseaseRecord.setEpiYear(epiData[0]);
                 }
+                diseaseRecord.setNumberOfCases(Long.valueOf(disease.getNumberOfCases()));
+                diseaseRecordList.add(diseaseRecord);
             });
             diseaseRecordRepository.saveAll(diseaseRecordList);
         }
