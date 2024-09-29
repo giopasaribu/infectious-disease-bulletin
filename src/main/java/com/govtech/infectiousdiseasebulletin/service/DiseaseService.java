@@ -56,7 +56,12 @@ public class DiseaseService {
     }
 
     @CacheEvict(value = {"diseaseData"}, allEntries = true)
+    public void invalidateDiseaseData() {
+        LOG.info("Invalidating disease data cache...");
+    }
+
     public void fetchAllLatestDiseaseData() {
+        invalidateDiseaseData();
         Long maxDiseaseId = diseaseRecordRepository.findMaxDiseaseId();
         Long initialOffset;
         if (maxDiseaseId == null) {
@@ -87,7 +92,7 @@ public class DiseaseService {
                 }
 
                 // Save the fetched data
-                saveDiseaseData(response.getResult().getRecords(), initialOffset);
+                saveDiseaseData(response.getResult().getRecords());
 
                 // Increment the offset by 10,000 for the next loop iteration
                 initialOffset += LIMIT;
@@ -103,7 +108,8 @@ public class DiseaseService {
         }
     }
 
-    private void saveDiseaseData(List<DiseaseDTO.Disease> diseaseList, Long dataOffset) {
+    @Transactional
+    public void saveDiseaseData(List<DiseaseDTO.Disease> diseaseList) {
         List<DiseaseRecord> diseaseRecordList = new ArrayList<DiseaseRecord>();
         if (!diseaseList.isEmpty()) {
             diseaseList.forEach(disease -> {
@@ -125,6 +131,7 @@ public class DiseaseService {
     @Transactional(readOnly = true)
     @Cacheable(value = "diseaseData", unless = "#result == null || #result.isEmpty()")
     public Map<String, Map<String, List<String>>> getProcessedDiseaseData() {
+        LOG.info("Cache miss... Re-retrieving disease data");
         try (Stream<DiseaseRecord> stream = diseaseRecordRepository.streamAll()) {
             // Filter, group, and sort the data
             Map<String, Map<String, List<DiseaseRecord>>> processedData = stream

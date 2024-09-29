@@ -31,8 +31,8 @@ jobs:
             ${{ runner.os }}-maven-
 
       # Step 4: Build the application using Maven
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
+      - name: Build with Maven and run test
+        run: mvn clean package
 
       # Step 5: Configure AWS credentials for ECR and ECS access
       - name: Configure AWS credentials

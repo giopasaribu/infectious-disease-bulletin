@@ -29,6 +29,12 @@ public class DiseaseController {
         return ResponseEntity.ok(null);
     }
 
+    @PostMapping("/invalidate-cache")
+    public ResponseEntity invalidateDiseaseCache() {
+        diseaseService.invalidateDiseaseData();
+        return ResponseEntity.ok(null);
+    }
+
     @GetMapping("/get")
     public ResponseEntity<Map<String, Map<String, List<String>>>> getDisease() {
         return ResponseEntity.ok(diseaseService.getProcessedDiseaseData());

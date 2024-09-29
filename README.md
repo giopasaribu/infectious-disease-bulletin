@@ -86,7 +86,9 @@ The project is deployed on AWS using ECS (Elastic Container Service) with ECR (E
 
 ## API Endpoints
 ### Disease Data Endpoints
-- **GET /api/disease/get-disease**: Fetches disease data.
+- **GET /api/disease/get**: Fetches disease data.
+- **POST /api/disease/pull-async**: Pull data from api (on-demand).
+- **POST /api/disease/invalidate-cache**: Invalidate disease cache (on-demand).
 
 ## Environment Variables
 The backend uses the following environment variables:
